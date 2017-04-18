@@ -1,6 +1,13 @@
 import theano
 import theano.tensor as T
 
+# Taken from https://arxiv.org/pdf/1503.02531.pdf
+# This crossentropy fn. is a weighted average of two different objective fns. 
+# The first objective function is the crossentropy with the soft targets 
+# and this cross entropy is computed using the same high temperature in
+# the softmax of the distilled model as was used for generating the soft targets# from the cumbersome model. The second objective function is the cross entropy # with the correct labels. This is computed using exactly the same logits in 
+# softmax of the distilled model but at a temperature of 1.
+
 def custom_crossentropy(combined_targets, nn_output):
     Lambda = 0.5
     _EPS = 10e-8
