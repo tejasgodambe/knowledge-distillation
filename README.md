@@ -20,25 +20,25 @@ confuse. Unlike a mixture of experts, these specialist models can be trained
 rapidly and in parallel. 
 
 # Scripts
-1. train_student_DNN.py 
+1. train_student_DNN.py   
 This Python script is the main script. In this script, user has to provide the input directories 
 such as alignments, HMM, data folder. The output directory is where the weights (after 
 each epoch) and the final weights (both in hdf5 and txt format) are saved. 
 In this script, we define the DNN architecture and also set the DNN configuration params. 
 
-2. dataGenerator_teacher.py
+2. dataGenerator_teacher.py  
 This Python script is the generator which provides batches to Keras' fit_generator while training 
 teacher DNN. 
 
-3. dataGenerator_student.py
+3. dataGenerator_student.py  
 This Python script is the generator which provides batches to Keras' fit_generator while training
 student DNN. 
 
-4. custom_crossentropy.py
+4. custom_crossentropy.py  
 This Python script has the custom crossentropy loss used for training student DNN. 
 
-5. softmax_with_temp.py 
+5. softmax_with_temp.py  
 This Python script has the implementation of softmax fn with temperature parameter. 
 
-6. saveModel.py 
+6. saveModel.py  
 This Python script converts DNN weights from hdf5 to txt format.  
