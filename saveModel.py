@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+# Author: D S Pavan Kumar
+# Date: April 2016
+
 import keras
 import numpy
 import sys

@@ -9,8 +9,8 @@ import theano
 import theano.tensor as T 
 import keras
 from subprocess import Popen, PIPE, DEVNULL
-from dataGenerator_7window_student import dataGenerator_7window_student_tr
-from dataGenerator_7window_student import dataGenerator_7window_student_cv
+from dataGenerator_student import dataGenerator_student_tr
+from dataGenerator_student import dataGenerator_student_cv
 import custom_crossentropy, softmax_with_temp, kaldiIO, saveModel
 from average_DNN_predictions import geometric_mean, arithmetic_mean
 

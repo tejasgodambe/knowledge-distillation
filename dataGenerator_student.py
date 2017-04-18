@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Author: Pavan Kumar
+# Author: D S Pavan Kumar
 # Modified by: Tejas Godambe
 # Date: April 2017
 
@@ -11,7 +11,7 @@ import os, time, sys
 import keras
 
 ## Data generator class for Kaldi
-class dataGenerator_7window_student_tr:
+class dataGenerator_student_tr:
     def __init__ (self, data, ali, exp, batchSize=256):
         self.data = data
         self.ali = ali
@@ -177,7 +177,7 @@ class dataGenerator_7window_student_tr:
         return (xMini, yMini)
 
 ## Data generator class for Kaldi
-class dataGenerator_7window_student_cv:
+class dataGenerator_student_cv:
     def __init__ (self, data, ali, exp, batchSize=256):
         self.data = data
         self.ali = ali

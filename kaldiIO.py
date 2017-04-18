@@ -3,7 +3,6 @@
 ## Author: D S Pavan Kumar
 ## Email: Pavan.Kumar@inin.com
 
-
 import numpy
 import struct
 
