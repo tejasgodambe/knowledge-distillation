@@ -16,7 +16,7 @@ from average_DNN_predictions import geometric_mean, arithmetic_mean
 
 ############# USER CONFIGURABLE PARAMS STARTS #############
 ## Learning parameters
-learning = {'rate' : 0.08),
+learning = {'rate' : 0.08,
             'batchSize' : 256}
 
 ## Input directories
