@@ -8,10 +8,12 @@ import numpy as np
 import theano
 import theano.tensor as T 
 import keras
-from subprocess import Popen, PIPE, DEVNULL
-from dataGenerator_student import dataGenerator_student_tr
-from dataGenerator_student import dataGenerator_student_cv
-import custom_crossentropy, softmax_with_temp, kaldiIO, saveModel
+from subprocess import Popen, PIPE
+from dataGenerator_student_tr import dataGenerator_student_tr
+from dataGenerator_student_cv import dataGenerator_student_cv
+from custom_crossentropy import custom_crossentropy
+import kaldiIO 
+from saveModel import saveModel
 from average_DNN_predictions import geometric_mean, arithmetic_mean
 
 ############# USER CONFIGURABLE PARAMS STARTS #############
@@ -20,22 +22,21 @@ learning = {'rate' : 0.08,
             'batchSize' : 256}
 
 ## Input directories
-data_tr = 'train_tr95_20hrs_first35kUtts'
+data_tr = 'train_tr95'
 data_cv = 'train_cv05'
 sgmm='/home/pavan/2016h2/en-US-wc-sou-dd2/exp/sgmm2_4a_1500'
 ali_tr='/home/pavan/2016h2/en-US-wc-sou-dd2/exp/sgmm2_4a_1500_ali_tr95'
 ali_cv='/home/pavan/2016h2/en-US-wc-sou-dd2/exp/sgmm2_4a_1500_ali_cv05'
 
 ## Output directories
-outdir = 'outdir_en-US_273_256_256_1375_20hrs_first35kUtts_student_Lambda_0.5_0.5'
+outdir = 'outdir_en-US_429_512_256_512_1375_student_Lambda_0.5_0.5'
 model_out = outdir + '/' + 'dnn.nnet'
 model_out_h5 = model_out + '.h5'
 ############# USER CONFIGURABLE PARAMS ENDS #############
 
 ## Main code
-if '__name__' == '__main__': 
-
-    os.makedirs (exp, exist_ok=True)
+if __name__ == '__main__': 
+    os.makedirs (outdir, exist_ok=True)
     
     logfile = sys.argv[0] + '.log'
     if os.path.exists(logfile):
@@ -43,7 +44,9 @@ if '__name__' == '__main__':
     log_obj = open (logfile, 'w')
     sys.stdout = log_obj
     
-    model_list = ['outdir_en-US_273_512_512_1375_20hrs_first35kUtts_teacher/dnn.nnet.h15']
+    model_list = ['outdir_en-US_429_1024_1024_1024_1024_1375/dnn.nnet.h15',
+                  'outdir_en-US_429_1024_1024_1024_1024_1024_1375/dnn.nnet.h15',
+                  'outdir_en-US_429_2048_2048_2048_2048_1375/dnn.nnet.h15']
     model_list = [keras.models.load_model(m) for m in model_list]
     weights = list(np.ones(len(model_list)))
 
@@ -51,9 +54,9 @@ if '__name__' == '__main__':
     st = time.time()
     outfile = data_tr + '/teacher_predictions.ark'
     print ('Writing teacher predictions...', outfile)
-    p1 = Popen (['splice-feats','--print-args=false','--left-context=3','--right-context=3',
+    p1 = Popen (['splice-feats','--print-args=false','--left-context=5','--right-context=5',
              'scp:' + data_tr + '/feats.scp','ark:-'], stdout=PIPE)
-    with open ('temp_teacher_dummyExpt.ark', 'wb') as f:
+    with open ('temp_teacher.ark', 'wb') as f:
         while True:
             uid, featMat = kaldiIO.readUtterance (p1.stdout)
             if uid == None:
@@ -62,17 +65,18 @@ if '__name__' == '__main__':
             kaldiIO.writeUtterance(uid, avg_prediction, f, sys.stdout.encoding)
     p1.stdout.close()
     et = time.time()
-    os.rename('temp_teacher_dummyExpt.ark', outfile)
+    os.rename('temp_teacher.ark', outfile)
     print ('Done writing teacher predictions for ', data_tr, '. Time taken: ', et-st)
     
     ## Initialize data generator
-    trGen = dataGenerator_7window_student_tr (data_tr, ali_tr, sgmm, learning['batchSize'])
-    cvGen = dataGenerator_7window_student_cv (data_cv, ali_cv, sgmm, learning['batchSize'])
+    trGen = dataGenerator_student_tr (data_tr, ali_tr, sgmm, learning['batchSize'])
+    cvGen = dataGenerator_student_cv (data_cv, ali_cv, sgmm, learning['batchSize'])
     
     ## Define DNN architecture and initialize weights
     m = keras.models.Sequential([
-                    keras.layers.Dense(256, activation='relu', input_dim=273),
+                    keras.layers.Dense(512, activation='relu', input_dim=429),
                     keras.layers.Dense(256, activation='relu'),
+                    keras.layers.Dense(512, activation='relu'),
                     keras.layers.Dense(1375, activation='linear')])
     
     print (m.summary())
@@ -84,7 +88,7 @@ if '__name__' == '__main__':
     print ('Learning rate: %f' % learning['rate'])
     
     ## Keras callbacks
-    filepath = exp + '/weights.{epoch:02d}-{val_acc:.2f}.h5'
+    filepath = outdir + '/weights.{epoch:02d}-{val_acc:.2f}.h5'
     # to save weights after each epoch
     checkpointer = keras.callbacks.ModelCheckpoint(filepath, monitor='val_acc', 
                    verbose=1, save_best_only=False, mode='auto')
