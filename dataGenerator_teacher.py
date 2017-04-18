@@ -14,7 +14,7 @@ import numpy
 import os
 
 ## Data generator class for Kaldi
-class dataGenerator_7window_teacher:
+class dataGenerator_teacher:
     def __init__ (self, data, ali, exp, batchSize=256):
         self.data = data
         self.ali = ali
@@ -34,7 +34,7 @@ class dataGenerator_7window_teacher:
         with open (aliPdf) as f:
             labels, self.numFeats = self.readLabels (f)
        
-        self.inputFeatDim = 273 ## NOTE: IMPORTANT: HARDCODED. Change if necessary.
+        self.inputFeatDim = 429 ## NOTE: IMPORTANT: HARDCODED. Change if necessary.
         self.outputFeatDim = self.readOutputFeatDim()
         self.splitDataCounter = 0
         
@@ -117,7 +117,7 @@ class dataGenerator_7window_teacher:
     ## Return a minibatch to work on
     def getNextSplitData (self):
         feats = 'scp:' + self.data + '/split' + str(self.numSplit) + '/' + str(self.splitDataCounter)
-        p1 = Popen (['splice-feats','--print-args=false','--left-context=3','--right-context=3',
+        p1 = Popen (['splice-feats','--print-args=false','--left-context=5','--right-context=5',
                 feats + '/feats.scp','ark:-'], stdout=PIPE)
 
         with open (self.labelDir.name + '/' + str(self.splitDataCounter) + '.pickle', 'rb') as f:
