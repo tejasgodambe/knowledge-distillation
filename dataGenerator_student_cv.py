@@ -26,7 +26,7 @@ class dataGenerator_student_cv:
         aliPdf = self.data + '/alipdf.txt'
  
         ## Generate pdf indices
-        Popen (['ali-to-pdf', exp + '/final.mdl',
+        Popen (['/home/tejas/tools/kaldi/src/bin/ali-to-pdf', exp + '/final.mdl',
                     'ark:gunzip -c %s/ali.*.gz |' % ali,
                     'ark,t:' + aliPdf]).communicate()
 
@@ -62,7 +62,7 @@ class dataGenerator_student_cv:
         
     ## Determine the number of output labels
     def readOutputFeatDim (self):
-        p1 = Popen (['am-info', '%s/final.mdl' % self.exp], stdout=PIPE)
+        p1 = Popen (['/home/tejas/tools/kaldi/src/bin/am-info', '%s/final.mdl' % self.exp], stdout=PIPE)
         modelInfo = p1.stdout.read().splitlines()
         for line in modelInfo:
             if b'number of pdfs' in line:
@@ -105,6 +105,7 @@ class dataGenerator_student_cv:
             line = line.split()
             numFeats += len(line)-1
             labels[line[0]] = [int(i) for i in line[1:]]
+        #numBatches = numFeats // self.batchSize
         return labels, numFeats
     
     ## Save split labels into disk
@@ -129,7 +130,7 @@ class dataGenerator_student_cv:
     ## Return a minibatch to work on
     def getNextSplitData (self):
         feats = 'scp:' + self.data + '/split' + str(self.numSplit) + '/' + str(self.splitDataCounter) + '/feats.scp'
-        p1 = Popen (['splice-feats','--print-args=false','--left-context=5','--right-context=5',
+        p1 = Popen (['/home/tejas/tools/kaldi/src/featbin/splice-feats','--print-args=false','--left-context=5','--right-context=5',
                 feats, 'ark:-'], stdout=PIPE)
 
         with open (self.labelDir.name + '/' + str(self.splitDataCounter) + '.pickle', 'rb') as f:
@@ -161,6 +162,12 @@ class dataGenerator_student_cv:
             self.x = numpy.concatenate ((self.x[self.batchPointer:], x))
             self.y = numpy.concatenate ((self.y[self.batchPointer:], y))
             self.batchPointer = 0
+
+            ## Shuffle data
+            randomInd = numpy.array(range(len(self.x)))
+            numpy.random.shuffle(randomInd)
+            self.x = self.x[randomInd]
+            self.y = self.y[randomInd]
 
             if self.splitDataCounter == self.numSplit:
                 self.splitDataCounter = 0

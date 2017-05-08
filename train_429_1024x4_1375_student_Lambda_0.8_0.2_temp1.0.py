@@ -3,10 +3,10 @@
 # Author: Tejas Godambe 
 # Date: April 2017
 
+import theano 
+import theano.tensor as T 
 import sys, os, time
 import numpy as np
-import theano
-import theano.tensor as T 
 import keras
 from subprocess import Popen, PIPE
 from dataGenerator_student_tr import dataGenerator_student_tr
@@ -29,7 +29,7 @@ ali_tr='/home/pavan/2016h2/en-US-wc-sou-dd2/exp/sgmm2_4a_1500_ali_tr95'
 ali_cv='/home/pavan/2016h2/en-US-wc-sou-dd2/exp/sgmm2_4a_1500_ali_cv05'
 
 ## Output directories
-outdir = 'outdir_en-US_429_512_256_512_1375_student_Lambda_0.5_0.5'
+outdir = 'outdir_en-US_429_1024_1024_1024_1024_1375_student_Lambda_0.8_0.2_temp1.0'
 model_out = outdir + '/' + 'dnn.nnet'
 model_out_h5 = model_out + '.h5'
 ############# USER CONFIGURABLE PARAMS ENDS #############
@@ -38,12 +38,12 @@ model_out_h5 = model_out + '.h5'
 if __name__ == '__main__': 
     os.makedirs (outdir, exist_ok=True)
     
-    logfile = sys.argv[0] + '.log'
-    if os.path.exists(logfile):
-        os.remove(logfile)
-    log_obj = open (logfile, 'w')
-    sys.stdout = log_obj
-    
+#    logfile = sys.argv[0] + '.log'
+#    if os.path.exists(logfile):
+#        os.remove(logfile)
+#    log_obj = open (logfile, 'w')
+#    sys.stdout = log_obj
+#    
     model_list = ['outdir_en-US_429_1024_1024_1024_1024_1375/dnn.nnet.h15',
                   'outdir_en-US_429_1024_1024_1024_1024_1024_1375/dnn.nnet.h15',
                   'outdir_en-US_429_2048_2048_2048_2048_1375/dnn.nnet.h15']
@@ -74,9 +74,10 @@ if __name__ == '__main__':
     
     ## Define DNN architecture and initialize weights
     m = keras.models.Sequential([
-                    keras.layers.Dense(512, activation='relu', input_dim=429),
-                    keras.layers.Dense(256, activation='relu'),
-                    keras.layers.Dense(512, activation='relu'),
+                    keras.layers.Dense(1024, activation='relu', input_dim=429),
+                    keras.layers.Dense(1024, activation='relu'),
+                    keras.layers.Dense(1024, activation='relu'),
+                    keras.layers.Dense(1024, activation='relu'),
                     keras.layers.Dense(1375, activation='linear')])
     
     print (m.summary())
@@ -100,12 +101,13 @@ if __name__ == '__main__':
                      min_delta=0.005, patience=3, verbose=1, mode='auto')
     
     ## DNN training 
-    m.fit_generator (trGen, samples_per_epoch=trGen.numFeats,
+    m.fit_generator (trGen, samples_per_epoch=trGen.numFeats, 
+          max_q_size=1000, nb_worker=10, pickle_safe=False,
           validation_data=cvGen, nb_val_samples=cvGen.numFeats,
           nb_epoch=30, verbose=1, callbacks=[checkpointer, reduce_lr, early_stopping]) 
     
     ## Save final weights
-    m.save_weights (retrained_model_h5, overwrite=True)
-    saveModel (m, retrained_model) # convert weights in h5 to txt format
+    m.save_weights (model_out_h5, overwrite=True)
+    saveModel (m, model_out) # convert weights in h5 to txt format
     
     print ('Learning finished ...')

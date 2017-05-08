@@ -3,7 +3,7 @@ import theano.tensor as T
 from softmax_with_temp import softmax_with_temp
 
 def custom_crossentropy(combined_targets, nn_output):
-    Lambda = 0.5
+    Lambda = 0.8
     _EPS = 10e-8
     hard_targets = T.floor(combined_targets)
     soft_targets = combined_targets - hard_targets
